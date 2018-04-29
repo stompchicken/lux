@@ -28,16 +28,18 @@ impl Vec3 {
         self / self.length()
     }
 
-    pub fn dot(self, other: Vec3) -> f32 {
-        (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
-    }
-
-    pub fn cross(self, other: Vec3) -> Vec3 {
-        Vec3 { x: (self.y * other.z) + (self.z * other.y),
-               y: (self.x * other.z) + (self.z * other.x),
-               z: (self.x * other.y) + (self.y * other.x) }
-    }
 }
+
+pub fn dot(v1: Vec3, v2: Vec3) -> f32 {
+    (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
+}
+
+pub fn cross(v1: Vec3, v2: Vec3) -> Vec3 {
+    Vec3 { x: (v1.y * v2.z) + (v1.z * v2.y),
+           y: (v1.x * v2.z) + (v1.z * v2.x),
+           z: (v1.x * v2.y) + (v1.y * v2.x) }
+}
+
 
 impl ops::Add for Vec3 {
     type Output = Vec3;
@@ -113,7 +115,7 @@ impl Ray {
               direction: direction }
     }
 
-    pub fn point_at(r: Ray, t: f32) -> Vec3 {
-        r.origin + (t * r.direction)
+    pub fn point_at(self, t: f32) -> Vec3 {
+        self.origin + (t * self.direction)
     }
 }

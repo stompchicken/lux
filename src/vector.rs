@@ -17,21 +17,21 @@ impl Vec3 {
     }
 
     pub fn squared_length(self) -> f32 {
-        (self.x * self.x) + (self.y * self.y) + (self.z * self.z)
+        return (self.x * self.x) + (self.y * self.y) + (self.z * self.z);
     }
 
     pub fn length(self) -> f32 {
-        (self.squared_length()).sqrt()
+        return (self.squared_length()).sqrt();
     }
 
     pub fn normalise(self) -> Vec3 {
-        self / self.length()
+        return self / self.length();
     }
 
 }
 
 pub fn dot(v1: Vec3, v2: Vec3) -> f32 {
-    (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
+    return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
 }
 
 pub fn cross(v1: Vec3, v2: Vec3) -> Vec3 {
@@ -116,6 +116,95 @@ impl Ray {
     }
 
     pub fn point_at(self, t: f32) -> Vec3 {
-        self.origin + (t * self.direction)
+        return self.origin + (t * self.direction);
+    }
+}
+
+#[derive(PartialEq, Debug, Clone, Copy)]
+pub struct Hit {
+    pub t: f32,
+    pub p: Vec3,
+    pub normal: Vec3
+}
+
+pub trait Object {
+    fn test_hit(self, r: Ray, t_min: f32, t_max: f32) -> Option<Hit>;
+}
+
+
+#[derive(PartialEq, Debug, Clone, Copy)]
+pub struct Sphere {
+    pub center: Vec3,
+    pub radius: f32
+}
+
+impl Sphere {
+
+    pub fn new(center: Vec3, radius: f32) -> Sphere {
+        Sphere { center: center, radius: radius }
+    }
+
+}
+
+impl Object for Sphere {
+
+    fn test_hit(self, r: Ray, t_min: f32, t_max: f32) -> Option<Hit> {
+        let oc = r.origin - self.center;
+        let a = dot(r.direction, r.direction);
+        let b = dot(oc, r.direction);
+        let c = dot(oc, oc) - self.radius * self.radius;
+        let d = b*b - a*c;
+        if d > 0.0 {
+            let temp = (-b - (b*b - a*c).sqrt()) / a;
+            if (temp < t_max) && (temp > t_min) {
+                let hit = Hit { t: temp,
+                                p: r.point_at(temp),
+                                normal: (r.point_at(temp) - self.center) / self.radius
+                };
+                return Some(hit);
+            } else {
+                let temp2 = (-b + (b*b - a*c).sqrt()) / a;
+                if (temp < t_max) && (temp > t_min) {
+                    let hit = Hit { t: temp2,
+                                    p: r.point_at(temp2),
+                                    normal: (r.point_at(temp2) - self.center) / self.radius
+                    };
+                    return Some(hit);
+                } else {
+                    return None;
+                }
+            }
+        } else {
+            return None;
+        }
+    }
+}
+
+pub struct World {
+    pub objects: Vec<Sphere>
+}
+
+
+impl World {
+
+    pub fn new() -> World {
+        World { objects: Vec::new() }
+    }
+
+    pub fn test_hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<Hit> {
+        let mut closest = t_max;
+        let mut h: Option<Hit> = None;
+        for obj in self.objects.iter() {
+            match obj.test_hit(r, t_min, closest) {
+                Some(hit) => {
+                    closest = hit.t;
+                    h = Some(hit);
+
+                },
+                None => {},
+            }
+        }
+
+        return h;
     }
 }

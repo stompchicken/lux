@@ -1,0 +1,14 @@
+[package]
+name = "lux"
+version = "0.1.0"
+authors = ["Stephen Spencer <steve@stompchicken.com>"]
+
+[lib]
+name = "lux"
+path = "src/lux.rs"
+
+[[bin]]
+name = "lux"
+path = "src/bin/main.rs"
+
+[dependencies]

@@ -1,9 +1,10 @@
 extern crate lux;
+extern crate rand;
 
-use lux::vector::{Vec3, Ray, Sphere, World};
+use lux::vector::{Vec3, Ray, Sphere, World, Camera};
 use lux::image::{Colour, Bitmap, lerp};
 use std::path::Path;
-
+use rand::Rng;
 
 fn colour(r: Ray, world: &World) ->  Colour {
 
@@ -22,13 +23,16 @@ fn colour(r: Ray, world: &World) ->  Colour {
 
 
 fn main() {
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::origin();
 
     let width = 400;
     let height = 200;
+    let n_rays = 100;
+
+    let camera = Camera::new(
+        Vec3::origin(),
+        Vec3::new(-2.0, -1.0, -1.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        Vec3::new(4.0, 0.0, 0.0));
 
     let mut world = World::new();
     world.objects.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
@@ -36,17 +40,35 @@ fn main() {
 
     let mut image = Bitmap::new(width, height);
 
+    let mut rng = rand::thread_rng();
+
     for y in 0..height {
         for x in 0..width {
-            let u = x as f32 / width as f32;
-            let v = 1.0 - (y as f32 / height as f32);
 
-            let r = Ray::new(origin, lower_left_corner + (u*horizontal) + (v*vertical));
-            let c = colour(r, &world);
+            let mut col = Colour::black();
 
-            image.pixel(x, y).r = c.r;
-            image.pixel(x, y).g = c.g;
-            image.pixel(x, y).b = c.b;
+            for _n in 0..n_rays {
+
+                let px: f32 = rng.gen();
+                let py: f32 = rng.gen();
+
+                let u = ((x as f32) + px) / width as f32;
+                let v = 1.0 - ((y as f32) + py) / height as f32;
+
+                let r = camera.get_ray(u, v);
+                let c = colour(r, &world);
+
+                col.r += c.r;
+                col.g += c.g;
+                col.b += c.b;
+
+            }
+
+            image.pixel(x, y).r = col.r / (n_rays as f32);
+            image.pixel(x, y).g = col.g / (n_rays as f32);
+            image.pixel(x, y).b = col.b / (n_rays as f32);
+
+
         }
     }
 

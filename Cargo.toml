@@ -12,3 +12,4 @@ name = "lux"
 path = "src/bin/main.rs"
 
 [dependencies]
+rand = "0.3.15"

@@ -35,24 +35,37 @@ fn colour(r: Ray, world: &World, depth: i32) -> Colour {
 
 fn main() {
 
-    let width = 800;
-    let height = 400;
-    let n_rays = 500;
+    let width = 400;
+    let height = 200;
+    let n_rays = 100;
 
-    let camera = Camera::new(
-        Vec3::origin(),
-        Vec3::new(-2.0, -1.0, -1.0),
-        Vec3::new(0.0, 2.0, 0.0),
-        Vec3::new(4.0, 0.0, 0.0));
+    let camera = Camera::new(90.0,
+                             width as f32 / height as f32);
 
     let mut world = World::new();
-    world.objects.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0),
-                                   0.5,
-                                   Material::new(Colour::new(0.8, 0.3, 0.3))));
+    world.objects.push(
+        Sphere::new(
+            Vec3::new(0.0, 0.0, -1.0),
+            0.5,
+            Material::new(Colour::new(0.8, 0.3, 0.3), false, 0.0)));
 
-    world.objects.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0),
-                                   100.0,
-                                   Material::new(Colour::new(0.8,0.8,0.0))));
+    world.objects.push(
+        Sphere::new(
+            Vec3::new(0.0, -100.5, -1.0),
+            100.0,
+            Material::new(Colour::new(0.8,0.8,0.0), false, 0.0)));
+
+    world.objects.push(
+        Sphere::new(
+            Vec3::new(1.0, 0.0, -1.0),
+            0.5,
+            Material::new(Colour::new(0.8,0.6,0.2), true, 0.3)));
+
+    world.objects.push(
+        Sphere::new(
+            Vec3::new(-1.0, 0.0, -1.0),
+            0.5,
+            Material::new(Colour::new(0.8,0.8,0.8), true, 1.0)));
 
     let mut image = Bitmap::new(width, height);
 

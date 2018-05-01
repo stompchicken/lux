@@ -101,18 +101,30 @@ impl World {
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Material {
     pub albedo: Colour,
+    pub metal: bool,
+    pub fuzz: f32,
 }
 
 impl Material {
 
-    pub fn new(albedo: Colour) -> Material {
-        Material { albedo: albedo }
+    pub fn new(albedo: Colour, metal: bool, fuzz: f32) -> Material {
+        Material { albedo: albedo, metal: metal, fuzz: fuzz }
     }
 
     pub fn scatter(self, r: Ray, hit: Hit) -> Option<(Ray, Colour)> {
-        let target = hit.p + hit.normal + random_in_unit_sphere();
-        let ray = Ray::new(hit.p, target - hit.p);
-        return Some((ray, self.albedo));
+        if self.metal {
+            let reflected = reflect(r.direction.normalise(), hit.normal);
+            let scattered = Ray::new(hit.p, reflected + self.fuzz * random_in_unit_sphere());
+            if dot(scattered.direction, hit.normal) > 0.0 {
+                return Some((scattered, self.albedo));
+            } else {
+                return None;
+            }
+        } else {
+            let target = hit.p + hit.normal + random_in_unit_sphere();
+            let ray = Ray::new(hit.p, target - hit.p);
+            return Some((ray, self.albedo));
+        }
     }
 }
 
@@ -123,4 +135,8 @@ fn random_in_unit_sphere() -> Vec3 {
         p = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
     }
     return p;
+}
+
+fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    return v - (dot(v,n) * n);
 }

@@ -1,3 +1,4 @@
+use std::ops as ops;
 use std::cmp;
 use std::error::Error;
 use std::io::prelude::*;
@@ -32,6 +33,22 @@ impl Colour {
          cmp::min((self.b * x) as u32 , max-1))
     }
 
+    pub fn gamma_correct(self) -> Colour {
+        Colour { r: self.r.sqrt(),
+                 g: self.g.sqrt(),
+                 b: self.b.sqrt() }
+    }
+
+}
+
+impl ops::Mul<Colour> for Colour {
+    type Output = Colour;
+
+    fn mul(self, c: Colour) -> Colour {
+        Colour { r: self.r * c.r,
+                 g: self.g * c.g,
+                 b: self.b * c.b }
+    }
 }
 
 pub fn lerp(t: f32, c1: Colour, c2: Colour) -> Colour {
@@ -77,7 +94,7 @@ impl Bitmap {
         file.write(format!("{}\n", max_value).as_bytes())?;
 
         for (i, pixel) in self.pixels.iter().enumerate() {
-            let (r, g, b) = pixel.discretise(max_value);
+            let (r, g, b) = pixel.gamma_correct().discretise(max_value);
             let rgb = format!("{} {} {} ", r, g, b);
             file.write(rgb.as_bytes())?;
             if (i+1) % (self.width as usize) == 0 {

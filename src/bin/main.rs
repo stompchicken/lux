@@ -1,22 +1,33 @@
 extern crate lux;
 extern crate rand;
 
-use lux::vector::{Vec3, Ray, Sphere, World, Camera};
+use lux::vector::{Vec3, Ray, Camera};
+use lux::world::{Sphere, World, Material};
 use lux::image::{Colour, Bitmap, lerp};
 use std::path::Path;
-use rand::Rng;
+use rand::{Rng};
 
-fn colour(r: Ray, world: &World) ->  Colour {
+fn colour(r: Ray, world: &World, depth: i32) -> Colour {
 
-    match world.test_hit(r, 0.0, 1000.0) {
-        Some(hit) => Colour::new(0.5 * (hit.normal.x + 1.0),
-                                 0.5 * (hit.normal.y + 1.0),
-                                 0.5 * (hit.normal.z + 1.0)),
+    match world.test_hit(r, 0.001, 1000.0) {
+        Some(hit) => {
+            if depth < 50 {
+                match hit.material.scatter(r, hit) {
+                    Some((scattered, attn)) => {
+                        return attn * colour(scattered, world, depth+1);
+
+                    },
+                    None => Colour::black()
+                }
+            } else {
+                return Colour::black();
+            }
+        }
         None => {
             let d = r.direction.normalise();
             let t = 0.5 * (d.y + 1.0);
             let c = Colour::new(0.5, 0.7, 1.0);
-            lerp(t, c, Colour::white())
+            return lerp(t, c, Colour::white());
         }
     }
 }
@@ -24,9 +35,9 @@ fn colour(r: Ray, world: &World) ->  Colour {
 
 fn main() {
 
-    let width = 400;
-    let height = 200;
-    let n_rays = 100;
+    let width = 800;
+    let height = 400;
+    let n_rays = 500;
 
     let camera = Camera::new(
         Vec3::origin(),
@@ -35,8 +46,13 @@ fn main() {
         Vec3::new(4.0, 0.0, 0.0));
 
     let mut world = World::new();
-    world.objects.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
-    world.objects.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0));
+    world.objects.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0),
+                                   0.5,
+                                   Material::new(Colour::new(0.8, 0.3, 0.3))));
+
+    world.objects.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0),
+                                   100.0,
+                                   Material::new(Colour::new(0.8,0.8,0.0))));
 
     let mut image = Bitmap::new(width, height);
 
@@ -56,7 +72,7 @@ fn main() {
                 let v = 1.0 - ((y as f32) + py) / height as f32;
 
                 let r = camera.get_ray(u, v);
-                let c = colour(r, &world);
+                let c = colour(r, &world, 0);
 
                 col.r += c.r;
                 col.g += c.g;

@@ -1,6 +1,7 @@
 use rand::{Rng,thread_rng};
 
-use vector::{Vec3, dot, Ray};
+use vector::{Vec3, dot};
+use camera::{Ray};
 use image::{Colour};
 
 #[derive(PartialEq, Debug, Clone, Copy)]

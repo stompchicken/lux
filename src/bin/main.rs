@@ -1,21 +1,21 @@
 extern crate lux;
 extern crate rand;
 
-use lux::vector::{Vec3, Ray, Camera};
+use lux::vector::{Vec3};
+use lux::camera::{Camera, Ray};
 use lux::world::{Sphere, World, Material};
 use lux::image::{Colour, Bitmap, lerp};
 use std::path::Path;
 use rand::{Rng};
 
-fn colour(r: Ray, world: &World, depth: i32) -> Colour {
+fn trace_ray(r: Ray, world: &World, depth: i32) -> Colour {
 
     match world.test_hit(r, 0.001, 1000.0) {
         Some(hit) => {
             if depth < 50 {
                 match hit.material.scatter(r, hit) {
                     Some((scattered, attn)) => {
-                        return attn * colour(scattered, world, depth+1);
-
+                        return attn * trace_ray(scattered, world, depth+1);
                     },
                     None => Colour::black()
                 }
@@ -37,9 +37,9 @@ fn main() {
 
     let width = 400;
     let height = 200;
-    let n_rays = 100;
+    let n_rays = 1000;
 
-    let camera = Camera::new(90.0,
+    let camera = Camera::new(45.0,
                              width as f32 / height as f32);
 
     let mut world = World::new();
@@ -85,7 +85,7 @@ fn main() {
                 let v = 1.0 - ((y as f32) + py) / height as f32;
 
                 let r = camera.get_ray(u, v);
-                let c = colour(r, &world, 0);
+                let c = trace_ray(r, &world, 0);
 
                 col.r += c.r;
                 col.g += c.g;

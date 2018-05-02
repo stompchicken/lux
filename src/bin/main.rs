@@ -103,9 +103,9 @@ fn main() {
 
 
 
-    let result = image.write_ppm(Path::new("out.ppm"));
+    let result = image.write_ppm(Path::new("test_image.ppm"));
     match result {
-        Ok(_) => println!("Wrote image to {:?}", "out.ppm"),
+        Ok(_) => println!("Wrote image to {:?}", "test_image.ppm"),
         Err(e) => println!("Error writing: {:?}", e),
     }
 

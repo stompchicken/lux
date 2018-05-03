@@ -4,7 +4,6 @@ version = "0.1.0"
 authors = ["Stephen Spencer <steve@stompchicken.com>"]
 
 [dependencies]
-rand = "0.4"
 
 [lib]
 name = "lux"

@@ -1,8 +1,9 @@
-use rand::{Rng,thread_rng};
-
 use vector::{Vec3, dot};
 use camera::{Ray};
 use image::{Colour};
+
+use random::{thread_rng};
+//use rand::{Rng, thread_rng};
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Hit {
@@ -133,7 +134,9 @@ fn random_in_unit_sphere() -> Vec3 {
     let mut p = Vec3::new(1.0, 1.0, 1.0);
     let mut rng = thread_rng();
     while p.squared_length() >= 1.0 {
-        p = 2.0 * Vec3::new(rng.gen(), rng.gen(), rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
+        p = 2.0 * Vec3::new(rng.gen(),
+                            rng.gen(),
+                            rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
     }
     return p;
 }

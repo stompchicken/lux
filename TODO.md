@@ -1,10 +1,11 @@
-[ ] Random number generator
+[x] Random number generator
 [ ] Camera refactor
-[ ] Rectangles
+[ ] Rectangles/Boxes
 [ ] Lights
 [ ] Cornell box
 [ ] Unit tests
 [ ] Benchmarks
+[ ] Object/Material refactor
 
 [ ] Dielectrics
 [ ] Depth of field

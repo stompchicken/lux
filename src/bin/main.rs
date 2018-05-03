@@ -1,12 +1,11 @@
 extern crate lux;
-extern crate rand;
 
 use lux::vector::{Vec3};
 use lux::camera::{Camera, Ray};
 use lux::world::{Sphere, World, Material};
 use lux::image::{Colour, Bitmap, lerp};
+use lux::random::{thread_rng};
 use std::path::Path;
-use rand::{Rng};
 
 fn trace_ray(r: Ray, world: &World, depth: i32) -> Colour {
 
@@ -69,7 +68,7 @@ fn main() {
 
     let mut image = Bitmap::new(width, height);
 
-    let mut rng = rand::thread_rng();
+    let mut rng = thread_rng();
 
     for y in 0..height {
         for x in 0..width {

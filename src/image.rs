@@ -1,4 +1,3 @@
-use std::ops as ops;
 use std::cmp;
 use std::error::Error;
 use std::io::prelude::*;
@@ -6,24 +5,22 @@ use std::io;
 use std::fs::File;
 use std::path::Path;
 
+use light::{Colour};
+
 #[derive(PartialEq, Debug, Clone, Copy)]
-pub struct Colour {
+pub struct Pixel {
     pub r: f32,
     pub g: f32,
     pub b: f32,
 }
 
-impl Colour {
-    pub fn new(r: f32, g:f32, b:f32) -> Colour {
-        Colour { r: r, g: g, b: b }
+impl Pixel {
+    pub fn new(r: f32, g:f32, b:f32) -> Pixel {
+        Pixel { r: r, g: g, b: b }
     }
 
-    pub fn black() -> Colour {
-        Colour { r: 0.0, g: 0.0, b: 0.0 }
-    }
-
-    pub fn white() -> Colour {
-        Colour { r: 1.0, g: 1.0, b: 1.0 }
+    pub fn from_colour(colour: Colour) -> Pixel {
+        Pixel { r: colour.r, g: colour.g, b: colour.b }
     }
 
     pub fn discretise(self, max: u32) -> (u32, u32, u32) {
@@ -33,34 +30,19 @@ impl Colour {
          cmp::min((self.b * x) as u32 , max-1))
     }
 
-    pub fn gamma_correct(self) -> Colour {
-        Colour { r: self.r.sqrt(),
-                 g: self.g.sqrt(),
-                 b: self.b.sqrt() }
+    pub fn gamma_correct(self) -> Pixel {
+        Pixel { r: self.r.powf(0.5),
+                g: self.g.powf(0.5),
+                b: self.b.powf(0.5)
+        }
     }
 
-}
-
-impl ops::Mul<Colour> for Colour {
-    type Output = Colour;
-
-    fn mul(self, c: Colour) -> Colour {
-        Colour { r: self.r * c.r,
-                 g: self.g * c.g,
-                 b: self.b * c.b }
-    }
-}
-
-pub fn lerp(t: f32, c1: Colour, c2: Colour) -> Colour {
-    Colour { r: (t * c1.r) + (1.0 - t) * c2.r,
-             g: (t * c1.g) + (1.0 - t) * c2.g,
-             b: (t * c1.b) + (1.0 - t) * c2.b }
 }
 
 pub struct Bitmap {
     width: u32,
     height: u32,
-    pixels: Vec<Colour>
+    pixels: Vec<Pixel>
 }
 
 impl Bitmap {
@@ -69,11 +51,11 @@ impl Bitmap {
         let size = (width * height) as usize;
         Bitmap { width: width,
                  height: height,
-                 pixels: vec![Colour::white(); size] }
+                 pixels: vec![Pixel::new(0.0,0.0,0.0); size] }
     }
 
 
-    pub fn pixel(&mut self, x: u32, y: u32) -> &mut Colour {
+    pub fn pixel(&mut self, x: u32, y: u32) -> &mut Pixel {
         &mut self.pixels[(y*self.width + x) as usize]
     }
 

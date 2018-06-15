@@ -1,4 +1,5 @@
 use std::ops as ops;
+use std::f32;
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub struct Vec3 {
@@ -101,6 +102,3 @@ impl ops::Div<Vec3> for f32 {
                z: v.z / self}
     }
 }
-
-
-

@@ -1,14 +1,14 @@
 [package]
-name = "lux"
+name = "solaire"
 version = "0.1.0"
 authors = ["Stephen Spencer <steve@stompchicken.com>"]
 
 [dependencies]
 
 [lib]
-name = "lux"
-path = "src/lux.rs"
+name = "solaire"
+path = "src/solaire.rs"
 
 [[bin]]
-name = "lux"
+name = "solaire"
 path = "src/bin/main.rs"

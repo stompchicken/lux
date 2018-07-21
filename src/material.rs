@@ -1,11 +1,27 @@
-use vector::{Vec3, dot};
-use light::{Colour, Ray, Hit};
+use vector::{Vector};
+use light::{Colour, Ray, Hit, HitResult};
+use world::{Material};
 use random::{thread_rng};
 
+#[derive(PartialEq, Debug, Clone, Copy)]
+pub struct NormalSurface {
+}
 
-pub trait Material {
-    fn scatter(&self, r: &Ray, hit: &Hit) -> Option<Ray>;
-    fn emit(&self) -> Option<Colour>;
+impl NormalSurface {
+    pub fn new() -> NormalSurface {
+        NormalSurface {}
+    }
+}
+
+
+impl Material for NormalSurface {
+
+    fn hit(&self, _r: &Ray, hit: &Hit) -> HitResult {
+        let c = hit.surface_normal.normalise();
+        return HitResult::Emitted(hit.time, Colour::new(0.5 * (c.x + 1.0),
+                                                        0.5 * (c.y + 1.0),
+                                                        0.5 * (c.z + 1.0)));
+    }
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -22,14 +38,10 @@ impl Diffuse {
 
 impl Material for Diffuse {
 
-    fn scatter(&self, r: &Ray, hit: &Hit) -> Option<Ray> {
-        let target = hit.p + hit.normal + random_in_unit_sphere();
-        let ray = Ray::new(hit.p, target - hit.p, r.colour * self.albedo);
-        return Some(ray);
-    }
-
-    fn emit(&self) -> Option<Colour> {
-        None
+    fn hit(&self, r: &Ray, hit: &Hit) -> HitResult {
+        let target = hit.location + hit.surface_normal + random_in_unit_sphere();
+        let ray = Ray::new(hit.location, target - hit.location, r.colour * self.albedo);
+        return HitResult::Reflected(hit.time, ray);
     }
 }
 
@@ -49,20 +61,16 @@ impl Metal {
 
 impl Material for Metal {
 
-    fn scatter(&self, r: &Ray, hit: &Hit) -> Option<Ray> {
-        let reflected = reflect(r.direction.normalise(), hit.normal);
-        let scattered = Ray::new(hit.p,
+    fn hit(&self, r: &Ray, hit: &Hit) -> HitResult {
+        let reflected = reflect(r.direction.normalise(), hit.surface_normal);
+        let scattered = Ray::new(hit.location,
                                  reflected + self.fuzz * random_in_unit_sphere(),
                                  r.colour * self.colour);
-        if dot(scattered.direction, hit.normal) > 0.0 {
-            return Some(scattered);
+        if Vector::dot(scattered.direction, hit.surface_normal) > 0.0 {
+            return HitResult::Reflected(hit.time, scattered);
         } else {
-            return None;
+            return HitResult::None;
         }
-    }
-
-    fn emit(&self) -> Option<Colour> {
-        None
     }
 
 }
@@ -82,39 +90,23 @@ impl DiffuseLight {
 
 impl Material for DiffuseLight {
 
-    fn scatter(&self, _r: &Ray, _hit: &Hit) -> Option<Ray> {
-        None
-    }
-
-    fn emit(&self) -> Option<Colour> {
-        Some(self.colour)
+    fn hit(&self, _r: &Ray, hit: &Hit) -> HitResult {
+        HitResult::Emitted(hit.time, self.colour)
     }
 
 }
 
-fn random_in_unit_sphere() -> Vec3 {
-    let mut p = Vec3::new(1.0, 1.0, 1.0);
+fn random_in_unit_sphere() -> Vector {
+    let mut p = Vector::new(1.0, 1.0, 1.0);
     let mut rng = thread_rng();
     while p.squared_length() >= 1.0 {
-        p = 2.0 * Vec3::new(rng.gen(),
+        p = 2.0 * Vector::new(rng.gen(),
                             rng.gen(),
-                            rng.gen()) - Vec3::new(1.0, 1.0, 1.0);
+                            rng.gen()) - Vector::new(1.0, 1.0, 1.0);
     }
     return p;
 }
 
-fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    return v - (dot(v,n) * n);
+fn reflect(v: Vector, n: Vector) -> Vector {
+    return v - (Vector::dot(v,n) * n);
 }
-/*
-fn refract(v: Vec3, n: Vec3, ni_over_nt: f32) -> Option<Vec3> {
-    let uv = v.normalise();
-    let dt = dot(uv, n);
-    let discrim = 1.0 - ni_over_nt*ni_over_nt*(1.0 - dt*dt);
-    if discrim > 0.0 {
-        Some(ni_over_nt*(uv - n*dt) - n*discrim.sqrt())
-    } else {
-        None
-    }
-}
-*/
